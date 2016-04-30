@@ -36,6 +36,8 @@ class Server:
           self.post(inp[1], addr)
         elif inp[0] == 'lookup':
           self.lookup(c)
+        elif inp[0] == 'sync':
+          self.sync()
         else:
           print("Received message:", recv)
 
