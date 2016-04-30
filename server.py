@@ -5,6 +5,7 @@ import replicated
 
 class Server:
 
+
   def __init__(self, port=80):
     self.socket = socket.socket()
     self.host = socket.gethostname()
