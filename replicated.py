@@ -1,26 +1,30 @@
+from __future__ import print_function
 
 
-#
-# class ReplicatedDictionary:
-#
-#   def __init__(self):
-#     self.dict = {}
-#
-#   def addPost(self, key, post):
-#     self.dict[key] = post
-#
+class ReplicatedDictionary:
+
+  def __init__(self):
+    self.dict = {}
+
+  def addPost(self, timeStamp, post, author):
+    self.dict[len(self.dict)] = entry(post, author, timeStamp)
+
+  def showPosts(self, c):
+    for key, entry in self.dict.iteritems():
+      print(entry.author, ": ", entry.post, sep="")
+
 
 class ReplicatedLog:
 
   def __init__(self):
     self.log = {}
 
-  def addPost(self, timeStamp, post):
-    self.dict[timeStamp] = post
 
-  def showPosts(self):
-    for time, value in self.log:
-      print
+class entry:
+  def __init__(self, post, author, timeStamp):
+    self.post = post
+    self.author = author
+    self.timeStamp = timeStamp
 
 
 

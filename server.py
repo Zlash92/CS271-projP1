@@ -9,7 +9,7 @@ class Server:
     self.socket = socket.socket()
     self.host = socket.gethostname()
     self.socket.bind((self.host, port))
-    self.data = replicated.ReplicatedLog()
+    self.data = replicated.ReplicatedDictionary()
     self.time = 0
     self.timeTable = None
 
@@ -33,7 +33,7 @@ class Server:
           c.close()
           break
         elif inp[0] == 'post':
-          self.post(inp[1])
+          self.post(inp[1], addr)
         elif inp[0] == 'lookup':
           self.lookup(c)
         else:
@@ -41,13 +41,13 @@ class Server:
 
       break
 
-  def post(self, msg):
+  def post(self, msg, author):
     self.incrementTime()
-    self.data.addPost(self.time, msg)
+    self.data.addPost(self.time, msg, author)
     print("Post has been submitted at local time", self.time)
 
   def lookup(self, c):
-    print("Looking up")
+    c.send(self.data)
 
   def sync(self, other):
     pass
@@ -55,4 +55,5 @@ class Server:
   def incrementTime(self):
     self.time += 1
 
-server = Server()
+server = Server(port=18861)
+# Server()
