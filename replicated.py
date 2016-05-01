@@ -9,7 +9,7 @@ class ReplicatedDictionary:
   def addPost(self, timeStamp, post, author):
     self.dict[len(self.dict)] = entry(post, author, timeStamp)
 
-  def showPosts(self, c):
+  def showPosts(self):
     for key, entry in self.dict.iteritems():
       print(entry.author, ": ", entry.post, sep="")
 
