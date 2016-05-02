@@ -4,12 +4,13 @@ import replicated
 import pickle
 
 class Client:
+
     def __init__(self, host, port=80):
         print("Setting up client")
         self.s = socket.socket()
-        self.connectToServer(self.s, host, port)
+        self.connect_to_server(self.s, host, port)
 
-    def connectToServer(self, s, host, port):
+    def connect_to_server(self, s, host, port):
         connection = False
         print("Connecting to server")
 
@@ -35,11 +36,10 @@ class Client:
                     self.s.send(msg)
                     recv = s.recv(1024)
                     blog = pickle.loads(recv)
-                    blog.showPosts()
-          
+                    blog.show_posts()
                 self.s.send(msg)
         self.s.close()
 
 
 # c = Client(host='128.111.43.37', port=12353)
-c = Client(host=socket.gethostname(), port=18869)
+c = Client(host=socket.gethostname(), port=18874)
