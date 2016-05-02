@@ -35,3 +35,6 @@ class Entry:
     def get_parent_server(self):
         return self.parent_server_id
 
+    def get_time_stamp(self):
+        return self.ge
+

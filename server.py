@@ -73,6 +73,7 @@ class Server:
             # The id of server where entry was first posted
             entry_server_id = e.get_parent_server()
 
+            if self.time_table[other_server_id][entry_server_id] < e.
 
 
     def increment_time(self):
