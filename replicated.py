@@ -10,9 +10,9 @@ class ReplicatedDictionary:
 
     def show_posts(self):
         for key, entry in self.dict.iteritems():
-            print(entry.author, ": ", entry.post, sep="")
+            entry.print_entry()
 
-    # Check if entry is in dictionary
+    # Return True if not in dictionary
     def is_not_in(self, entry):
         if entry in self.dict.values():
             return False
@@ -30,6 +30,13 @@ class ReplicatedLog:
     def remove_entry(self, entry):
         self.log.remove(entry)
 
+    def show_log(self):
+        for entry in self.log:
+            entry.print_entry()
+
+    def get_log(self):
+        return self.log
+
 
 class Entry:
     def __init__(self, post, author, time_stamp, parent_server_id):
@@ -46,3 +53,21 @@ class Entry:
     def get_time_stamp(self):
         return self.time_stamp
 
+    def print_entry(self):
+        print(self.author, ": ", self.post, sep="")
+
+
+# rd = ReplicatedDictionary()
+# entry1 = Entry("Hello", 1, 0, 0)
+# entry2 = Entry("World", 1, 2, 0)
+#
+#
+# rl = ReplicatedLog()
+# rl.add_entry(entry1)
+# rl.add_entry(entry2)
+#
+# rd.add_post(entry1)
+# rd.add_post(entry2)
+# rd.show_posts()
+# print(rd.is_not_in(entry2))
+# print(rd.is_not_in(entry1))
