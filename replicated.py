@@ -10,7 +10,7 @@ class ReplicatedDictionary:
 
     def show_posts(self):
         for key, entry in self.dict.iteritems():
-            print(entry.author, ": ", entry.post, sep="")
+            entry.print_entry()
 
 
 class ReplicatedLog:
@@ -22,6 +22,10 @@ class ReplicatedLog:
 
     def remove_entry(self, entry):
         self.log.remove(entry)
+
+    def show_log(self):
+        for entry in self.log:
+            entry.print_entry()
 
 class Entry:
     def __init__(self, post, author, time_stamp, parent_server_id):
@@ -37,4 +41,7 @@ class Entry:
 
     def get_time_stamp(self):
         return self.time_stamp
+
+    def print_entry(self):
+        print(self.author, ": ", self.post, sep="")
 

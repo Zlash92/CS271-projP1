@@ -18,10 +18,10 @@ class Server:
         self.socket.bind((self.host, port))
         self.data = replicated.ReplicatedDictionary()
         self.log = replicated.ReplicatedLog()
-        self.server_id = server_id
+        self.server_id = int(server_id)
         self.time_table = TimeTable(self.server_id, 3)
         self.threads = []
-        self.run = True
+        # self.run = True
 
         self.init_connection()
 
@@ -29,7 +29,7 @@ class Server:
         self.socket.listen(5)
         print("Server with id=", self.server_id, " is running and listening for incoming connections", sep="")
 
-        while self.run:
+        while True:
             # close = raw_input("Close server? y/n")
             # if close == "y":
             #     break
@@ -59,6 +59,7 @@ class Server:
 
     def lookup(self, c):
         package = pickle.dumps(self.data)
+        self.data.show_posts()
         c.send(package)
 
     def sync(self, sync_server):
@@ -114,6 +115,9 @@ class Server:
     def increment_time(self):
         self.time_table.increment_self()
 
+    def close_connection(self):
+        self.socket.close()
+
 
 class ClientHandler(threading.Thread):
     def __init__(self, client, address, parent_server):
@@ -122,9 +126,6 @@ class ClientHandler(threading.Thread):
         self.address = address
         self.parent_server = parent_server
 
-
-    def close_connection(self):
-        self.socket.close()
 
     def run(self):
         while True:
@@ -158,12 +159,13 @@ def column_min_vals(table):
 
     return result
 
-def handler(signum, frame):
-   try:
-      print('Ctrl+Z pressed')
-   finally:
-      server.close_connection()
+# def handler(signum, frame):
+#    try:
+#       print('Ctrl+Z pressed')
+#    finally:
+#       server.close_connection()
 
 
-server = Server(port=80)
-signal.signal(signal.SIGTSTP, handler)
+# server = Server(port=80)
+server = Server(port=18854)
+# signal.signal(signal.SIGTSTP, handler)
