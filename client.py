@@ -43,14 +43,13 @@ class Client:
                     recv = self.s.recv(1024)
                     blog = pickle.loads(recv)
                     blog.show_posts()
-
                 else:
                     self.s.send(msg)
-
         self.s.close()
 
 
+server_id = int(sys.argv[1])
 # c = Client(host='128.111.43.37', port=12353)
 c = Client(host=socket.gethostname(), port=18854)
-server_id = sys.argv[1]
 # c = Client(host=server_addresses[int(server_id)], port=80)
+

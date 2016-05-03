@@ -12,6 +12,13 @@ class ReplicatedDictionary:
         for key, entry in self.dict.iteritems():
             entry.print_entry()
 
+    # Check if entry is in dictionary
+    def is_not_in(self, entry):
+        if entry in self.dict.values():
+            return False
+        else:
+            return True
+
 
 class ReplicatedLog:
     def __init__(self):
@@ -26,6 +33,7 @@ class ReplicatedLog:
     def show_log(self):
         for entry in self.log:
             entry.print_entry()
+
 
 class Entry:
     def __init__(self, post, author, time_stamp, parent_server_id):
