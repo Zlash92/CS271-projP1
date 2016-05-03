@@ -42,7 +42,7 @@ class Server:
 
     def post(self, msg, author):
         self.increment_time()
-        entry = replicated.Entry(msg, author, self.time_table.get_self_clock())
+        entry = replicated.Entry(msg, author, self.time_table.get_self_clock(), self.server_id)
         self.data.add_post(entry)
         self.log.add_entry(entry)
         print("Post has been submitted at local time", self.time_table.get_self_clock())
@@ -144,7 +144,7 @@ def handler(signum, frame):
       server.close_connection()
 
 
-server = Server(server_id=0, port=18871)
+server = Server(server_id=0, port=18861)
 signal.signal(signal.SIGTSTP, handler)
 
 # Server()

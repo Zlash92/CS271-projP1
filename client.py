@@ -34,7 +34,7 @@ class Client:
 
                 elif msg == 'lookup':
                     self.s.send(msg)
-                    recv = s.recv(1024)
+                    recv = self.s.recv(1024)
                     blog = pickle.loads(recv)
                     blog.show_posts()
                 self.s.send(msg)
@@ -42,4 +42,4 @@ class Client:
 
 
 # c = Client(host='128.111.43.37', port=12353)
-c = Client(host=socket.gethostname(), port=18874)
+c = Client(host=socket.gethostname(), port=18861)
