@@ -7,6 +7,10 @@ import threading
 import pickle
 import signal
 
+server_addresses = ['128.111.84.159', # Server0
+                    '128.111.84.210', # Server1
+                    '128.111.84.221'] # Server2
+
 class Server:
     def __init__(self, server_id=sys.argv[1], port=80):
         self.socket = socket.socket()
@@ -36,9 +40,15 @@ class Server:
             client.start()
             self.threads.append(client)
 
+
         self.socket.close()
         for client in self.threads:
             client.join()
+
+    def send_message(self, msg, ip):
+        data = pickle.dumps(msg)
+        address = (ip, 80)
+        self.socket.sendto(data, address)
 
     def post(self, msg, author):
         self.increment_time()
@@ -51,12 +61,21 @@ class Server:
         package = pickle.dumps(self.data)
         c.send(package)
 
-    # Synchronize with other server by receiving log and time table from that server
-    def sync(self, other):
-        # TODO: Receive time table and log from other server
+    def sync(self, sync_server):
+        address = (server_addresses[sync_server], 80)
+        sock = socket.socket()
+        sock.connect(address)
+        r = sock.recv(1024)
+
+        sock.send("update_contents_on_my_server")
+        print("Waiting for receive")
+        recv = sock.recv(1024)
+        data = pickle.loads(recv)
+        # TODO: Fix timetable etc...pickle
+        sock.close()
+
         other_time_table = None
         other_log = None
-
         for e in other_log:
             if self.data.is_in(e):
                 self.data.add_post(e)
@@ -65,6 +84,10 @@ class Server:
         self.time_table.sync_tables(other_time_table)
         self.garbage_collect_log()
 
+    def received_sync(self, client):
+        print("Received sync msg")
+        client.send("Here you go")
+        print("Msg sent")
 
     # Compiles log to send when another server wants to sync with this server
     def compile_log(self):
@@ -91,14 +114,6 @@ class Server:
     def increment_time(self):
         self.time_table.increment_self()
 
-    # Ask server for input and close
-    def query_close(self):
-        close = raw_input("Close server? y/n")
-        if close == "y":
-            self.run = False
-
-    def close_connection(self):
-        self.socket.close()
 
 class ClientHandler(threading.Thread):
     def __init__(self, client, address, parent_server):
@@ -106,6 +121,10 @@ class ClientHandler(threading.Thread):
         self.client = client
         self.address = address
         self.parent_server = parent_server
+
+
+    def close_connection(self):
+        self.socket.close()
 
     def run(self):
         while True:
@@ -120,11 +139,13 @@ class ClientHandler(threading.Thread):
                 self.parent_server.post(inp[1], self.address)
             elif inp[0] == 'lookup':
                 self.parent_server.lookup(self.client)
-            elif inp[0] == 'sync':
-                self.parent_server.sync()
-            else:
+            elif inp[0] == 'sync' and len(inp)>1:
+                sync_server = int(inp[1])
+                self.parent_server.sync(sync_server)
+            elif recv == "update_contents_on_my_server":
+                self.parent_server.received_sync(self.client)
+            elif len(recv)>0:
                 print("Received message:", recv)
-
 
 # Returns a list of minimum values for each column in a 2D list
 def column_min_vals(table):
@@ -144,7 +165,5 @@ def handler(signum, frame):
       server.close_connection()
 
 
-server = Server(server_id=0, port=18871)
+server = Server(port=80)
 signal.signal(signal.SIGTSTP, handler)
-
-# Server()
