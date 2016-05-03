@@ -4,9 +4,10 @@ import replicated
 import pickle
 import sys
 
-server_addresses = ['128.111.84.159',  # Server0
-                    '128.111.84.210',  # Server1
-                    '128.111.84.221']  # Server2
+server_addresses = ['128.111.84.159', # Server0
+                    '128.111.84.210', # Server1
+                    '128.111.84.221'] # Server2
+
 
 class Client:
 
@@ -40,9 +41,17 @@ class Client:
 
                 elif msg == 'lookup':
                     self.s.send(msg)
-                    recv = self.s.recv(1024)
-                    blog = pickle.loads(recv)
-                    blog.show_posts()
+                    try:
+                        recv = self.s.recv(4096)
+                        blog = pickle.loads(recv)
+                        blog.show_posts()
+                    except ValueError, e:
+                        print("Error : Value Error : ", e)
+                    except EOFError, e:
+                        print("Error : EOFError : ", e)
+                    except e:
+                        print("Something unexpected happened, try again: ", e)
+
                 else:
                     self.s.send(msg)
         self.s.close()
@@ -50,6 +59,7 @@ class Client:
 
 server_id = int(sys.argv[1])
 # c = Client(host='128.111.43.37', port=12353)
-c = Client(host=socket.gethostname(), port=18852)
-# c = Client(host=server_addresses[int(server_id)], port=80)
+#c = Client(host=socket.gethostname(), port=18852)
+pport = 80
+c = Client(host=server_addresses[server_id], port=pport)
 

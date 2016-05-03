@@ -14,10 +14,16 @@ class ReplicatedDictionary:
 
     # Return True if not in dictionary
     def is_not_in(self, entry):
-        if entry in self.dict.values():
-            return False
-        else:
-            return True
+        # if entry in self.dict.values():
+        #     return False
+        # else:
+        #     return True
+        boolean = True
+        for dictEntry in self.dict.values():
+            if entry.time_stamp == dictEntry.time_stamp and entry.parent_server_id == dictEntry.parent_server_id:
+                boolean = False
+
+        return boolean
 
 
 class ReplicatedLog:
