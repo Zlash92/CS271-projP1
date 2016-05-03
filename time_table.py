@@ -9,11 +9,11 @@ class TimeTable(object):
     def sync_tables(self, table2):
 
         for i in range(self.size):
-            self.table[self.server_id][i] = max(self.table[self.server_id][i], table2[table2.server_id][i])
+            self.table[self.server_id][i] = max(self.table[self.server_id][i], table2.table[table2.server_id][i])
 
         for j in range(self.size):
             for k in range(self.size):
-                self.table[j][k] == max(self.table[j][k], table2[j][k])
+                self.table[j][k] == max(self.table[j][k], table2.table[j][k])
 
     def update(self, server, count):
         self.table[server][server] = count

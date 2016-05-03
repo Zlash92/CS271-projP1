@@ -18,7 +18,7 @@ class Server:
         self.socket.bind((self.host, port))
         self.data = replicated.ReplicatedDictionary()
         self.log = replicated.ReplicatedLog()
-        self.server_id = server_id
+        self.server_id = int(server_id)
         self.time_table = TimeTable(self.server_id, 3)
         self.threads = []
         self.run = True
@@ -65,49 +65,48 @@ class Server:
         address = (server_addresses[sync_server], 80)
         sock = socket.socket()
         sock.connect(address)
-        r = sock.recv(1024)
+        sock.recv(1024)
 
         sock.send("update_contents_on_my_server")
         print("Waiting for receive")
         recv = sock.recv(1024)
-        data = pickle.loads(recv)
-        # TODO: Fix timetable etc...pickle
+        (other_log, other_time_table) = pickle.loads(recv)
+
         sock.close()
 
-        other_time_table = None
-        other_log = None
-        for e in other_log:
-            if self.data.is_in(e):
+        for e in other_log.log:
+            if self.data.is_not_in(e):
                 self.data.add_post(e)
                 self.log.add_entry(e)
 
         self.time_table.sync_tables(other_time_table)
         self.garbage_collect_log()
 
-    def received_sync(self, client):
-        print("Received sync msg")
-        client.send("Here you go")
-        print("Msg sent")
+    def received_sync(self, client, id):
+        log = self.compile_log(other_server_id=id)
+        data = (log, self.time_table)
+        data_pickled = pickle.dumps(data)
+        client.send(data_pickled)
+        #print("Msg sent")
 
     # Compiles log to send when another server wants to sync with this server
-    def compile_log(self):
+    def compile_log(self, other_server_id):
         subLog = []
-        # TODO: server_id of recipient
-        other_server_id = None
-        for e in self.log:
+        for e in self.log.log:
             # The id of server where entry was first posted
             entry_server_id = e.get_parent_server()
 
-            if self.time_table[other_server_id][entry_server_id] < e.get_time_stamp():
+            if self.time_table.table[other_server_id][entry_server_id] < e.get_time_stamp():
                 subLog.append(e)
 
         return subLog
 
     def garbage_collect_log(self):
-        # Entry i is the clock time at server i, to which point this server knows that all other servers know about events at server i
-        max_common_clocks = column_min_vals(self.time_table)
+        # Entry i is the clock time at server i, to which point this server knows
+        # that all other servers know about events at server i
+        max_common_clocks = column_min_vals(self.time_table.table)
 
-        for e in self.log:
+        for e in self.log.log:
             if e.get_time_stamp() <= max_common_clocks[e.get_parent_server()]:
                 self.log.remove_entry(e)
 
@@ -143,14 +142,15 @@ class ClientHandler(threading.Thread):
                 sync_server = int(inp[1])
                 self.parent_server.sync(sync_server)
             elif recv == "update_contents_on_my_server":
-                self.parent_server.received_sync(self.client)
+                id = server_addresses.index(self.address[0])
+                self.parent_server.received_sync(self.client, id)
             elif len(recv)>0:
                 print("Received message:", recv)
+
 
 # Returns a list of minimum values for each column in a 2D list
 def column_min_vals(table):
     result = []
-    print(result)
 
     for i in range(len(table)):
         minval = min([row[i] for row in table])
@@ -166,4 +166,5 @@ def handler(signum, frame):
 
 
 server = Server(port=80)
+#server = Server(port=18867)
 signal.signal(signal.SIGTSTP, handler)
