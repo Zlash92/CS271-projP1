@@ -5,8 +5,7 @@ from time_table import TimeTable
 import sys
 import threading
 import pickle
-import atexit
-
+import signal
 
 class Server:
     def __init__(self, server_id=sys.argv[1], port=80):
@@ -27,9 +26,9 @@ class Server:
         print("Server with id=", self.server_id, " is running and listening for incoming connections", sep="")
 
         while self.run:
-            close = raw_input("Close server? y/n")
-            if close == "y":
-                break
+            # close = raw_input("Close server? y/n")
+            # if close == "y":
+            #     break
             c, addr = self.socket.accept()
             print("Connected to", addr)
             c.send("Connection to server was successful")
@@ -45,26 +44,29 @@ class Server:
         self.increment_time()
         entry = replicated.Entry(msg, author, self.time_table.get_self_clock())
         self.data.add_post(entry)
-        self.log.addEntry(entry)
+        self.log.add_entry(entry)
         print("Post has been submitted at local time", self.time_table.get_self_clock())
 
     def lookup(self, c):
         package = pickle.dumps(self.data)
         c.send(package)
 
+    # Synchronize with other server by receiving log and time table from that server
     def sync(self, other):
         # TODO: Receive time table and log from other server
         other_time_table = None
         other_log = None
 
         for e in other_log:
-            if e not in self.data:
+            if self.data.is_in(e):
                 self.data.add_post(e)
-                self.log.addEntry(e)
+                self.log.add_entry(e)
 
         self.time_table.sync_tables(other_time_table)
+        self.garbage_collect_log()
 
-    # Compiles log to send when receiving sync message
+
+    # Compiles log to send when another server wants to sync with this server
     def compile_log(self):
         subLog = []
         # TODO: server_id of recipient
@@ -73,7 +75,18 @@ class Server:
             # The id of server where entry was first posted
             entry_server_id = e.get_parent_server()
 
+            if self.time_table[other_server_id][entry_server_id] < e.get_time_stamp():
+                subLog.append(e)
 
+        return subLog
+
+    def garbage_collect_log(self):
+        # Entry i is the clock time at server i, to which point this server knows that all other servers know about events at server i
+        max_common_clocks = column_min_vals(self.time_table)
+
+        for e in self.log:
+            if e.get_time_stamp() <= max_common_clocks[e.get_parent_server()]:
+                self.log.remove_entry(e)
 
     def increment_time(self):
         self.time_table.increment_self()
@@ -84,6 +97,8 @@ class Server:
         if close == "y":
             self.run = False
 
+    def close_connection(self):
+        self.socket.close()
 
 class ClientHandler(threading.Thread):
     def __init__(self, client, address, parent_server):
@@ -110,9 +125,26 @@ class ClientHandler(threading.Thread):
             else:
                 print("Received message:", recv)
 
-def close_socket():
-    server.socket.close()
 
-server = Server(server_id=0, port=18874)
-atexit.register(close_socket)
+# Returns a list of minimum values for each column in a 2D list
+def column_min_vals(table):
+    result = []
+    print(result)
+
+    for i in range(len(table)):
+        minval = min([row[i] for row in table])
+        result.append(minval)
+
+    return result
+
+def handler(signum, frame):
+   try:
+      print('Ctrl+Z pressed')
+   finally:
+      server.close_connection()
+
+
+server = Server(server_id=0, port=18871)
+signal.signal(signal.SIGTSTP, handler)
+
 # Server()
