@@ -1,15 +1,15 @@
 class TimeTable(object):
 
-    def __init__(self, serverId, size):
+    def __init__(self, server_id, size):
 
         self.size = size
         self.table = [[0 for _ in range(size)] for _ in range(size)]
-        self.serverId = serverId
+        self.server_id = server_id
 
-    def sync_tables(self, table2, self_id, table2_id):
+    def sync_tables(self, table2):
 
         for i in range(self.size):
-            self.table[self_id][i] == table2[table2_id][i]
+            self.table[self.server_id][i] = max(self.table[self.server_id][i], table2[table2.server_id][i])
 
         for j in range(self.size):
             for k in range(self.size):
@@ -19,10 +19,10 @@ class TimeTable(object):
         self.table[server][server] = count
 
     def increment_self(self):
-        self.table[self.serverId][self.serverId] += 1
+        self.table[self.server_id][self.server_id] += 1
 
     def get_table_entry(self, i, j):
         return self.table[i][j]
 
     def get_self_clock(self):
-        return self.table[self.serverId][self.serverId]
+        return self.table[self.server_id][self.server_id]

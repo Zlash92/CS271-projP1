@@ -13,10 +13,10 @@ class Client:
     def __init__(self, host, port=80, server_id=sys.argv[1]):
         print("Setting up client")
         self.s = socket.socket()
-        self.connectToServer(host, port)
+        self.connect_to_server(host, port)
         self.connected_server_id = server_id
 
-    def connectToServer(self, host, port):
+    def connect_to_server(self, host, port):
         connection = False
         print("Connecting to server")
 
@@ -42,17 +42,8 @@ class Client:
                     self.s.send(msg)
                     recv = self.s.recv(1024)
                     blog = pickle.loads(recv)
-                    blog.showPosts()
-
-                elif msg[:4] == 'sync':
-                    self.s.send(msg)
-
-                elif msg[:4] == 'post':
-                    self.s.send(msg)
-
-                else:
-                    print("Invalid command")
-
+                    blog.show_posts()
+                self.s.send(msg)
         self.s.close()
 
 
@@ -60,3 +51,4 @@ class Client:
 #c = Client(host=socket.gethostname(), port=18869)
 server_id = sys.argv[1]
 c = Client(host=server_addresses[int(server_id)], port=80)
+
