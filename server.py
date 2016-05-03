@@ -7,6 +7,10 @@ import threading
 import pickle
 
 
+server_addresses = ['128.111.84.159', # Server0
+                    '128.111.84.210', # Server1
+                    '128.111.84.221'] # Server2
+
 class Server:
     def __init__(self, serverId=sys.argv[1], port=80):
         self.socket = socket.socket()
@@ -31,9 +35,15 @@ class Server:
             client.start()
             self.threads.append(client)
 
+
         self.socket.close()
         for client in self.threads:
             client.join()
+
+    def send_message(self, msg, ip):
+        data = pickle.dumps(msg)
+        address = (ip, 80)
+        self.socket.sendto(data, address)
 
     def post(self, msg, author):
         self.incrementTime()
@@ -44,8 +54,22 @@ class Server:
         package = pickle.dumps(self.data)
         c.send(package)
 
-    def sync(self, other):
-        pass
+    def sync(self, sync_server):
+        address = (server_addresses[sync_server], 80)
+        sock = socket.socket()
+        sock.connect(address)
+        r = sock.recv(1024)
+
+        sock.send("update_contents_on_my_server")
+        print("Waiting for receive")
+        data = sock.recv(1024)
+        print(data)
+        sock.close()
+
+    def received_sync(self, client):
+        print("Received sync msg")
+        client.send("Here you go")
+        print("Msg sent")
 
     def incrementTime(self):
         self.timeTable.increment_self()
@@ -55,8 +79,8 @@ class Server:
         print("Server with id=", self.serverId, " is running and listening for incoming connections", sep="")
 
 
-
 class ClientHandler(threading.Thread):
+
     def __init__(self, client, address, parentServer):
         threading.Thread.__init__(self)
         self.client = client
@@ -75,11 +99,14 @@ class ClientHandler(threading.Thread):
                 self.parentServer.post(inp[1], self.address)
             elif inp[0] == 'lookup':
                 self.parentServer.lookup(self.client)
-            elif inp[0] == 'sync':
-                self.parentServer.sync()
-            else:
+            elif inp[0] == 'sync' and len(inp)>1:
+                sync_server = int(inp[1])
+                self.parentServer.sync(sync_server)
+            elif recv == "update_contents_on_my_server":
+                self.parentServer.received_sync(self.client)
+            elif len(recv)>0:
                 print("Received message:", recv)
 
 
-server = Server(serverId=0, port=18869)
+server = Server(port=80)
 # Server()

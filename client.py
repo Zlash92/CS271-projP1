@@ -2,24 +2,31 @@ from __future__ import print_function
 import socket
 import replicated
 import pickle
+import sys
+
+server_addresses = ['128.111.84.159',  # Server0
+                    '128.111.84.210',  # Server1
+                    '128.111.84.221']  # Server2
 
 class Client:
-    def __init__(self, host, port=80):
+
+    def __init__(self, host, port=80, server_id=sys.argv[1]):
         print("Setting up client")
         self.s = socket.socket()
-        self.connectToServer(self.s, host, port)
+        self.connectToServer(host, port)
+        self.connected_server_id = server_id
 
-    def connectToServer(self, s, host, port):
+    def connectToServer(self, host, port):
         connection = False
         print("Connecting to server")
 
         try:
-            s.connect((host, port))
+            self.s.connect((host, port))
             connection = True
 
         except:
             print('Unable to connect to server')
-            s.close()
+            self.s.close()
 
         if connection:
             # Receive no more than 1024 bytes
@@ -33,13 +40,23 @@ class Client:
 
                 elif msg == 'lookup':
                     self.s.send(msg)
-                    recv = s.recv(1024)
+                    recv = self.s.recv(1024)
                     blog = pickle.loads(recv)
                     blog.showPosts()
-          
-                self.s.send(msg)
+
+                elif msg[:4] == 'sync':
+                    self.s.send(msg)
+
+                elif msg[:4] == 'post':
+                    self.s.send(msg)
+
+                else:
+                    print("Invalid command")
+
         self.s.close()
 
 
 # c = Client(host='128.111.43.37', port=12353)
-c = Client(host=socket.gethostname(), port=18869)
+#c = Client(host=socket.gethostname(), port=18869)
+server_id = sys.argv[1]
+c = Client(host=server_addresses[int(server_id)], port=80)
