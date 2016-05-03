@@ -12,7 +12,7 @@ server_addresses = ['128.111.84.159', # Server0
                     '128.111.84.221'] # Server2
 
 class Server:
-    def __init__(self, server_id=sys.argv[1], port=80):
+    def __init__(self, server_id, port=80):
         self.socket = socket.socket()
         self.host = socket.gethostname()
         self.socket.bind((self.host, port))
@@ -59,26 +59,31 @@ class Server:
 
     def lookup(self, c):
         package = pickle.dumps(self.data)
-        self.data.show_posts()
         c.send(package)
 
     def sync(self, sync_server):
         address = (server_addresses[sync_server], 80)
         sock = socket.socket()
         sock.connect(address)
-        sock.recv(1024)
+        sock.recv(4096)
 
         sock.send("update_contents_on_my_server")
-        print("Waiting for receive")
-        recv = sock.recv(1024)
+        recv = sock.recv(4096)
         (other_log, other_time_table) = pickle.loads(recv)
 
         sock.close()
 
         for e in other_log:
-            if self.data.is_not_in(e):
+            not_in = self.data.is_not_in(e)
+            if not_in:
                 self.data.add_post(e)
                 self.log.add_entry(e)
+
+        # for e in other_log:
+        #     for k in self.data.dict.values():
+        #         if (e.get_time_stamp() != k.get_time_stamp()) and (e.get_parent_server() != k.get_parent_server()):
+        #             self.data.add_post(e)
+        #             self.log.add_entry(e)
 
         self.time_table.sync_tables(other_time_table)
         self.garbage_collect_log()
@@ -128,7 +133,7 @@ class ClientHandler(threading.Thread):
 
     def run(self):
         while True:
-            recv = self.client.recv(1024)
+            recv = self.client.recv(4096)
             inp = recv.split(' ', 1)
             if recv == 'close':
                 print("Closing client connection")
@@ -165,9 +170,10 @@ def column_min_vals(table):
 #    finally:
 #       server.close_connection()
 
-
-# server = Server(port=80)
-server = Server(port=18852)
+id = int(sys.argv[1])
+pport = 80
+server = Server(server_id=id, port=pport)
+#server = Server(port=18852)
 # signal.signal(signal.SIGTSTP, handler)
 #server = Server(port=18867)
 
