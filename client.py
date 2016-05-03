@@ -51,4 +51,3 @@ class Client:
 #c = Client(host=socket.gethostname(), port=18869)
 server_id = sys.argv[1]
 c = Client(host=server_addresses[int(server_id)], port=80)
-
