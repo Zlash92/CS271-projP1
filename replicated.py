@@ -20,8 +20,8 @@ class ReplicatedLog:
     def add_entry(self, entry):
         self.log.append(entry)
 
-    def remove_entry(self):
-        pass
+    def remove_entry(self, entry):
+        self.log.remove(entry)
 
 class Entry:
     def __init__(self, post, author, time_stamp, parent_server_id):
@@ -36,5 +36,5 @@ class Entry:
         return self.parent_server_id
 
     def get_time_stamp(self):
-        return self.ge
+        return self.time_stamp
 

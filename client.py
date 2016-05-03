@@ -8,19 +8,19 @@ class Client:
     def __init__(self, host, port=80):
         print("Setting up client")
         self.s = socket.socket()
-        self.connect_to_server(self.s, host, port)
+        self.connect_to_server(host, port)
 
-    def connect_to_server(self, s, host, port):
+    def connect_to_server(self, host, port):
         connection = False
         print("Connecting to server")
 
         try:
-            s.connect((host, port))
+            self.s.connect((host, port))
             connection = True
 
         except:
             print('Unable to connect to server')
-            s.close()
+            self.s.close()
 
         if connection:
             # Receive no more than 1024 bytes
