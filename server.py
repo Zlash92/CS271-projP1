@@ -75,7 +75,7 @@ class Server:
 
         sock.close()
 
-        for e in other_log.log:
+        for e in other_log:
             if self.data.is_not_in(e):
                 self.data.add_post(e)
                 self.log.add_entry(e)
@@ -93,7 +93,7 @@ class Server:
     # Compiles log to send when another server wants to sync with this server
     def compile_log(self, other_server_id):
         subLog = []
-        for e in self.log.log:
+        for e in self.log.get_log():
             # The id of server where entry was first posted
             entry_server_id = e.get_parent_server()
 
@@ -107,7 +107,7 @@ class Server:
         # that all other servers know about events at server i
         max_common_clocks = column_min_vals(self.time_table.table)
 
-        for e in self.log.log:
+        for e in self.log.get_log():
             if e.get_time_stamp() <= max_common_clocks[e.get_parent_server()]:
                 self.log.remove_entry(e)
 
@@ -167,7 +167,7 @@ def column_min_vals(table):
 
 
 # server = Server(port=80)
-server = Server(port=18854)
+server = Server(port=18852)
 # signal.signal(signal.SIGTSTP, handler)
 #server = Server(port=18867)
 
